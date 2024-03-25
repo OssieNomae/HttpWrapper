@@ -1,7 +1,7 @@
 --[[
 	License: Licensed under the MIT License
 	Version: 1.0.0
-	Github: Link ???
+	Github: https://github.com/OssieNomae/HttpWrapper
 	Authors:
 		OssieNomae - 2024
 		
@@ -13,9 +13,9 @@
 	--------------------------------
 	
 	Functions:
-		Module.HttpRequest(RequestOptions) -> Returns a HttpResponse (https://create.roblox.com/docs/reference/engine/classes/HttpService#RequestAsync)
+		Module.HttpRequest(RequestOptions) -> Returns a HttpResponse -- https://create.roblox.com/docs/reference/engine/classes/HttpService#RequestAsync
 		
-		Module.AddURLParams(Url, Parameters) -> Returns the Url with URLSearchParams added onto (https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+		Module.AddURLParams(Url, Parameters) -> Returns the Url with URLSearchParams added onto -- https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
 		
 	--------------------------------
 	
@@ -27,7 +27,7 @@
 	
 	print(Response)
 	
-	-- Post Request with Url Params
+	-- Put Request with Url Params
 	local Response = HttpWrapper.HttpRequest({
 		Url = HttpWrapper.AddURLParams("https://httpbin.org/put", {
 			Name = "Tobie",
@@ -120,6 +120,7 @@ function Module.AddURLParams(Url, Parameters: Parameters): string -- URLSearchPa
 	return Url
 end
 
+-- TODO: Add Promise returning alternative (Module.PromiseHttpRequest)
 function Module.HttpRequest(RequestOptions: RequestOptions): HttpResponse
 	assert(type(RequestOptions.Url) == "string", `RequestOption "Url" argument missing!`)
 	assert(type(RequestOptions.Method) == "string", `RequestOption "Method" argument missing!`)
