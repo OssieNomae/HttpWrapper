@@ -1,6 +1,6 @@
 --[[
 	License: Licensed under the MIT License
-	Version: 1.0.0
+	Version: 1.0.1
 	Github: https://github.com/OssieNomae/HttpWrapper
 	Authors:
 		OssieNomae - 2024
@@ -13,9 +13,15 @@
 	--------------------------------
 	
 	Functions:
+		Module.AddURLParams(Url, Parameters) -> Returns the Url with URLSearchParams added onto -- https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+	
+		Module.PromiseHttpRequest(RequestOptions: RequestOptions) -> Returns a HttpResponse Promise
+	
 		Module.HttpRequest(RequestOptions) -> Returns a HttpResponse -- https://create.roblox.com/docs/reference/engine/classes/HttpService#RequestAsync
 		
-		Module.AddURLParams(Url, Parameters) -> Returns the Url with URLSearchParams added onto -- https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+		Module.JSONEncode(Table) -> [String] -- This is just HTTPService:JSONEncode wrapped
+		
+		Module.JSONDecode(String) -> [Table] -- This is just HTTPService:JSONDecode wrapped
 		
 	--------------------------------
 	
@@ -38,14 +44,14 @@
 		Headers = {
 			["Content-Type"] = "application/json"
 		},
-		Body = HttpService:JSONEncode({
+		Body = HttpWrapper.JSONEncode({
 			Hello = "Put"
 		})
 	})
 	
 	if not Response.Success then return end
 	
-	local Result = HttpService:JSONDecode(Response.Body)
+	local Result = HttpWrapper.JSONDecode(Response.Body)
 	print(Result)
 	
 --]]
@@ -85,15 +91,21 @@ export type Parameters = {[string]: string}?
 ----- Private Methods -----
 local function RequestASync(RequestOptions: RequestOptions)
 	return Promise.new(function(Resolve, Reject, OnCancel)
-		local Response = HttpService:RequestAsync({
-			Url = RequestOptions.Url,
-			Method = RequestOptions.Method,
-			Headers = RequestOptions.Headers,
-			Body = RequestOptions.Body
-		})
-
-		if not Response.Success then
-			Reject(Response)
+		local ExecuteSuccess, Response = pcall(function()
+			return HttpService:RequestAsync({
+				Url = RequestOptions.Url,
+				Method = RequestOptions.Method,
+				Headers = RequestOptions.Headers,
+				Body = RequestOptions.Body
+			})
+		end)
+		if not ExecuteSuccess then
+			Resolve({
+				Success = false,
+				StatusCode = 500,
+				StatusMessage = "HttpRequest: ExecutionError",
+				Body = tostring(Response)
+			})
 		end
 
 		Resolve(Response)
@@ -101,6 +113,14 @@ local function RequestASync(RequestOptions: RequestOptions)
 end
 
 ----- Public Methods -----
+function Module.JSONEncode(Table: any): string
+	return HttpService:JSONEncode(Table)
+end
+
+function Module.JSONDecode(String: string): any
+	return HttpService:JSONDecode(String)
+end
+
 function Module.AddURLParams(Url, Parameters: Parameters): string -- URLSearchParams
 	if not Parameters then
 		return Url
@@ -120,22 +140,26 @@ function Module.AddURLParams(Url, Parameters: Parameters): string -- URLSearchPa
 	return Url
 end
 
--- TODO: Add Promise returning alternative (Module.PromiseHttpRequest)
-function Module.HttpRequest(RequestOptions: RequestOptions): HttpResponse
-	assert(type(RequestOptions.Url) == "string", `RequestOption "Url" argument missing!`)
-	assert(type(RequestOptions.Method) == "string", `RequestOption "Method" argument missing!`)
-
-	local Success: boolean, Response: HttpResponse = RequestASync(RequestOptions):await()
-
-	if not Success then
-		return {
-			Success = false,
-			StatusCode = 500,
-			StatusMessage = "HttpRequest: ExecutionError",
-			Body = tostring(Response)
-		}
+function Module.PromiseHttpRequest(RequestOptions: RequestOptions)
+	if typeof(RequestOptions) ~= "table" then
+		return Promise.reject(`RequestOptions missing!`)
 	end
+	if type(RequestOptions.Url) ~= "string" then
+		return Promise.reject(`RequestOptions "Url" argument missing!`)
+	end
+	if type(RequestOptions.Method) ~= "string" then
+		return Promise.reject(`RequestOptions "Method" argument missing!`)
+	end
+	
+	return RequestASync(RequestOptions)
+end
 
+function Module.HttpRequest(RequestOptions: RequestOptions): HttpResponse
+	local PromiseSuccess: boolean, Response: HttpResponse = Module.PromiseHttpRequest(RequestOptions):await()
+	if not PromiseSuccess then
+		error(Response)
+	end
+	
 	return Response
 end
 

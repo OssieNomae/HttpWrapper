@@ -5,11 +5,17 @@ HttpWrapper around Roblox's already existing HTTPService API
 
 ## Methods
 ```lua
+.AddURLParams(Url, Parameters) -> Returns the Url with URLSearchParams added onto
+-- https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+
+.PromiseHttpRequest(RequestOptions) -> Returns a HttpResponse Promise
+
 .HttpRequest(RequestOptions) -> Returns a HttpResponse
 -- https://create.roblox.com/docs/reference/engine/classes/HttpService#RequestAsync
 
-.AddURLParams(Url, Parameters) -> Returns the Url with URLSearchParams added onto
--- https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+.JSONEncode(Table) -> [String] -- This is just HTTPService:JSONEncode wrapped
+		
+.JSONDecode(String) -> [Table] -- This is just HTTPService:JSONDecode wrapped
 ```
 ## Examples usage
 ```lua
@@ -33,13 +39,13 @@ local Response = HttpWrapper.HttpRequest({
   Headers = {
     ["Content-Type"] = "application/json"
   },
-  Body = HttpService:JSONEncode({
+  Body = HttpWrapper.JSONEncode({
     Hello = "Put"
   })
 })
 
 if not Response.Success then return end
 
-local Result = HttpService:JSONDecode(Response.Body)
+local Result = HttpWrapper.JSONDecode(Response.Body)
 print(Result)
 ```

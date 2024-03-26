@@ -1,7 +1,6 @@
 return function()
 	local HttpWrapper = require(script.Parent.Parent) -- HttpWrapper Module
-	local HttpService = game:GetService("HttpService")
-	
+
 	local function shallow_eq(o1, o2, ignore_mt)
 		if o1 == o2 then return true end
 		local o1Type = type(o1)
@@ -32,7 +31,7 @@ return function()
 		end
 		return true
 	end
-	
+
 	describe("URLParams", function()
 		it("should add URLParams to an URL", function()
 			local Url = HttpWrapper.AddURLParams("https://www.google.com", {
@@ -43,7 +42,7 @@ return function()
 
 			expect(Url).to.be.equal("https://www.google.com?Test=StringVariable&Name=Tobie&Data=Some%20random%20data")
 		end)
-		
+
 		it("should perform a simple PUT request with URLParams", function()
 			local response = HttpWrapper.HttpRequest({
 				Url = HttpWrapper.AddURLParams("https://httpbin.org/put", {
@@ -55,7 +54,7 @@ return function()
 				Headers = {
 					["Content-Type"] = "application/json"
 				},
-				Body = HttpService:JSONEncode({
+				Body = HttpWrapper.JSONEncode({
 					Hello = "Put"
 				})
 			})
@@ -63,9 +62,9 @@ return function()
 			expect(response).to.be.ok()
 			expect(response.Success).to.be.equal(true)
 			expect(response.StatusCode).to.be.equal(200)
-			
-			local Args = HttpService:JSONDecode(response.Body).args
-			
+
+			local Args = HttpWrapper.JSONDecode(response.Body).args
+
 			expect(shallow_eq(Args, {
 				Name = "Tobie",
 				Data = "Some random data",
@@ -73,19 +72,19 @@ return function()
 			}, true)).to.equal(true)
 		end)
 	end)
-	
+
 	describe("Request", function()
 		it("should perform a simple GET request", function()
 			local response = HttpWrapper.HttpRequest({
 				Url = "https://httpbin.org/get",
 				Method = "GET"
 			})
-			
+
 			expect(response).to.be.ok()
 			expect(response.Success).to.be.equal(true)
 			expect(response.StatusCode).to.be.equal(200)
 		end)
-		
+
 		it("should perform a simple POST request", function()
 			local response = HttpWrapper.HttpRequest({
 				Url = "https://httpbin.org/post",
@@ -93,7 +92,7 @@ return function()
 				Headers = {
 					["Content-Type"] = "application/json"
 				},
-				Body = HttpService:JSONEncode({
+				Body = HttpWrapper.JSONEncode({
 					Hello = "Post"
 				})
 			})
@@ -102,7 +101,7 @@ return function()
 			expect(response.Success).to.be.equal(true)
 			expect(response.StatusCode).to.be.equal(200)
 		end)
-		
+
 		it("should perform a simple PUT request", function()
 			local response = HttpWrapper.HttpRequest({
 				Url = "https://httpbin.org/put",
@@ -110,7 +109,7 @@ return function()
 				Headers = {
 					["Content-Type"] = "application/json"
 				},
-				Body = HttpService:JSONEncode({
+				Body = HttpWrapper.JSONEncode({
 					Hello = "Put"
 				})
 			})
@@ -119,7 +118,7 @@ return function()
 			expect(response.Success).to.be.equal(true)
 			expect(response.StatusCode).to.be.equal(200)
 		end)
-		
+
 		it("should perform a simple PATCH request", function()
 			local response = HttpWrapper.HttpRequest({
 				Url = "https://httpbin.org/patch",
@@ -127,7 +126,7 @@ return function()
 				Headers = {
 					["Content-Type"] = "application/json"
 				},
-				Body = HttpService:JSONEncode({
+				Body = HttpWrapper.JSONEncode({
 					Hello = "Patch"
 				})
 			})
@@ -136,7 +135,7 @@ return function()
 			expect(response.Success).to.be.equal(true)
 			expect(response.StatusCode).to.be.equal(200)
 		end)
-		
+
 		it("should perform a simple DELETE request", function()
 			local response = HttpWrapper.HttpRequest({
 				Url = "https://httpbin.org/delete",
@@ -147,7 +146,7 @@ return function()
 			expect(response.Success).to.be.equal(true)
 			expect(response.StatusCode).to.be.equal(200)
 		end)
-		
+
 		it("should handle unsuccessful requests", function()
 			local response = HttpWrapper.HttpRequest({
 				Url = "https://httpbin.org/status/400",
@@ -159,7 +158,7 @@ return function()
 			expect(response.StatusCode).to.be.ok()
 			expect(response.StatusMessage).to.be.ok()
 		end)
-		
+
 		it("should reject request without a specified Url", function()
 			expect(function()
 				local response = HttpWrapper.HttpRequest({
@@ -168,7 +167,7 @@ return function()
 				})
 			end).to.throw()
 		end)
-		
+
 		it("should reject request without a specified Method", function()
 			expect(function()
 				local response = HttpWrapper.HttpRequest({
