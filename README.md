@@ -1,51 +1,27 @@
-# HttpWrapper
-HttpWrapper around Roblox's already existing HTTPService API
-- Easy to use
-- Promise based
+<div align="center">
+<h1 align="center">HttpWrapper</h1>
+  <p align="center">
+    a HttpWrapper around Roblox's already existing HTTPService API
+  </p>
+    <a href="https://github.com/OssieNomae/HttpWrapper">Github</a>
+    ·
+    <a href="https://github.com/OssieNomae/HttpWrapper/wiki#documentation">Documentation</a>
+</div>
 
-## Methods
+## Getting Started
+### Prerequisites & Dependencies
+- [evaera' roblox-lua-promise module](https://github.com/evaera/roblox-lua-promise)
+
+### Installation
+1. Download the module (.rbxm) file from [Releases](https://github.com/OssieNomae/HttpWrapper/releases)
+2. Drag and drop the module (.rbxm) file onto Roblox Studio
+3. Modify the HttpWrapper Promise Module Path (Dependency)
 ```lua
-.AddURLParams(Url, Parameters) -> Returns the Url with URLSearchParams added onto
--- https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
-
-.PromiseHttpRequest(RequestOptions) -> Returns a HttpResponse Promise
-
-.HttpRequest(RequestOptions) -> Returns a HttpResponse
--- https://create.roblox.com/docs/reference/engine/classes/HttpService#RequestAsync
-
-.JSONEncode(Table) -> [String] -- This is just HTTPService:JSONEncode wrapped
-		
-.JSONDecode(String) -> [Table] -- This is just HTTPService:JSONDecode wrapped
+local Promise = require(ReplicatedStorage:WaitForChild("Util"):WaitForChild("Promise")) -- Path to the PROMISE Module
 ```
-## Examples usage
+5. Require the module
 ```lua
--- Simple Get Request
-local Response = HttpWrapper.HttpRequest({
-  Url = "https://httpbin.org/get",
-  Method = "GET"
-})
-
-print(Response)
+local HttpWrapper = require(PATH_TO_THE_MODULE)
 ```
-```lua
--- Put Request with Url Params
-local Response = HttpWrapper.HttpRequest({
-  Url = HttpWrapper.AddURLParams("https://httpbin.org/put", {
-    Name = "Tobie",
-    Data = "Some random data",
-    Test = "StringVariable",
-  }),
-  Method = "PUT",
-  Headers = {
-    ["Content-Type"] = "application/json"
-  },
-  Body = HttpWrapper.JSONEncode({
-    Hello = "Put"
-  })
-})
-
-if not Response.Success then return end
-
-local Result = HttpWrapper.JSONDecode(Response.Body)
-print(Result)
-```
+## Usage
+please refer to the [Documentation 🖱️](https://github.com/OssieNomae/HttpWrapper/wiki#documentation)
