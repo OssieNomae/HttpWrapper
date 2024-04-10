@@ -14,12 +14,12 @@
 
 ### Installation
 1. Download the module (.rbxm) file from [Releases](https://github.com/OssieNomae/HttpWrapper/releases)
-2. Drag and drop the module (.rbxm) file onto Roblox Studio
+2. Drag and drop the module (.rbxm) file onto Roblox Studio Place
 3. Modify the HttpWrapper Promise Module Path (Dependency)
 ```lua
 local Promise = require(ReplicatedStorage:WaitForChild("Util"):WaitForChild("Promise")) -- Path to the PROMISE Module
 ```
-5. Require the module
+4. Require the module
 ```lua
 local HttpWrapper = require(PATH_TO_THE_MODULE)
 ```
