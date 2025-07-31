@@ -1,6 +1,6 @@
 --[[
 	License: Licensed under the MIT License
-	Version: 1.1.0
+	Version: 1.1.1
 	Github: https://github.com/OssieNomae/HttpWrapper
 	Authors:
 		OssieNomae - 2024
@@ -73,10 +73,13 @@ export type RequestOptions = {
 }
 
 export type HttpResponse = {
-	Body: string?,
 	Success: boolean,
 	StatusCode: number,
 	StatusMessage: string,
+	Headers: {
+		[string]: any
+	}?,
+	Body: string?,
 }
 
 export type UrlParameters = {[string]: string}?
