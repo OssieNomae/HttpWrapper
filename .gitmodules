@@ -1,6 +1,3 @@
-[submodule "dependency/Promise"]
-	path = dependency/Promise
-	url = https://github.com/evaera/roblox-lua-promise.git
 [submodule "dependency/testez"]
 	path = dependency/testez
 	url = https://github.com/Roblox/testez.git

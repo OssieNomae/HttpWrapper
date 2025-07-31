@@ -1,21 +1,16 @@
 --[[
 	License: Licensed under the MIT License
-	Version: 1.0.1
+	Version: 1.1.0
 	Github: https://github.com/OssieNomae/HttpWrapper
 	Authors:
 		OssieNomae - 2024
-		
-	Dependencies:
-		Lua-Promise: https://github.com/evaera/roblox-lua-promise
 
 	HttpWrapper: Easy to use HttpWrapper around Roblox' already existing HTTPService API
 	
 	--------------------------------
 	
 	Functions:
-		Module.AddURLParams(Url, Parameters) -> Returns the Url with URLSearchParams added onto -- https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
-	
-		Module.PromiseHttpRequest(RequestOptions: RequestOptions) -> Returns a HttpResponse Promise
+		Module.AddURLParams(Url, UrlParameters) -> Returns the Url with URLSearchParams added onto -- https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
 	
 		Module.HttpRequest(RequestOptions) -> Returns a HttpResponse -- https://create.roblox.com/docs/reference/engine/classes/HttpService#RequestAsync
 		
@@ -62,10 +57,8 @@ local Module = {}
 
 ----- Loaded Services -----
 local HttpService = game:GetService("HttpService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 ----- Util / Shared / Modules  -----
-local Promise = require(ReplicatedStorage:WaitForChild("Util"):WaitForChild("Promise")) -- Promise Module
 
 ----- Types -----
 export type HttpMethods = "POST" | "GET" | "PUT" | "PATCH" | "DELETE"
@@ -86,30 +79,38 @@ export type HttpResponse = {
 	StatusMessage: string,
 }
 
-export type Parameters = {[string]: string}?
+export type UrlParameters = {[string]: string}?
+
+----- Private Variables -----
+local HttpMethodsDict = { -- for validation
+	POST = true,
+	GET = true,
+	PUT = true,
+	PATCH = true,
+	DELETE = true
+}
 
 ----- Private Methods -----
-local function RequestASync(RequestOptions: RequestOptions)
-	return Promise.new(function(Resolve, Reject, OnCancel)
-		local ExecuteSuccess, Response = pcall(function()
-			return HttpService:RequestAsync({
-				Url = RequestOptions.Url,
-				Method = RequestOptions.Method,
-				Headers = RequestOptions.Headers,
-				Body = RequestOptions.Body
-			})
-		end)
-		if not ExecuteSuccess then
-			Resolve({
-				Success = false,
-				StatusCode = 500,
-				StatusMessage = "HttpRequest: ExecutionError",
-				Body = tostring(Response)
-			})
-		end
-
-		Resolve(Response)
+local function RequestASync(RequestOptions: RequestOptions): HttpResponse
+	local ExecuteSuccess, Response: HttpResponse = pcall(function()
+		return HttpService:RequestAsync({
+			Url = RequestOptions.Url,
+			Method = RequestOptions.Method,
+			Headers = RequestOptions.Headers,
+			Body = RequestOptions.Body
+		})
 	end)
+	
+	if not ExecuteSuccess then
+		return {
+			Success = false,
+			StatusCode = 500,
+			StatusMessage = "HttpRequest: ExecutionError",
+			Body = tostring(Response)
+		}
+	end
+
+	return Response
 end
 
 ----- Public Methods -----
@@ -121,8 +122,8 @@ function Module.JSONDecode(String: string): any
 	return HttpService:JSONDecode(String)
 end
 
-function Module.AddURLParams(Url, Parameters: Parameters): string -- URLSearchParams
-	if not Parameters then
+function Module.AddURLParams(Url, UrlParameters: UrlParameters): string -- URLSearchParams
+	if not UrlParameters then
 		return Url
 	end
 
@@ -131,7 +132,7 @@ function Module.AddURLParams(Url, Parameters: Parameters): string -- URLSearchPa
 	end
 
 	local Params = {}
-	for Index,Value in pairs(Parameters) do -- Create a Array of Stringified Params
+	for Index,Value in UrlParameters do -- Create a Array of Stringified Params
 		table.insert(Params, `{tostring(Index)}={HttpService:UrlEncode(tostring(Value))}`)
 	end
 
@@ -140,27 +141,23 @@ function Module.AddURLParams(Url, Parameters: Parameters): string -- URLSearchPa
 	return Url
 end
 
-function Module.PromiseHttpRequest(RequestOptions: RequestOptions)
+function Module.HttpRequest(RequestOptions: RequestOptions): HttpResponse
 	if typeof(RequestOptions) ~= "table" then
-		return Promise.reject(`RequestOptions missing!`)
+		return error(`RequestOptions missing!`)
 	end
+	
 	if type(RequestOptions.Url) ~= "string" then
-		return Promise.reject(`RequestOptions "Url" argument missing!`)
+		return error(`RequestOptions "Url" argument missing!`)
 	end
+	
 	if type(RequestOptions.Method) ~= "string" then
-		return Promise.reject(`RequestOptions "Method" argument missing!`)
+		return error(`RequestOptions "Method" argument missing!`)
+	end
+	if not HttpMethodsDict[RequestOptions.Method] then
+		return error(`RequestOptions "Method" {RequestOptions.Method} is not a valid argument!`)
 	end
 	
 	return RequestASync(RequestOptions)
-end
-
-function Module.HttpRequest(RequestOptions: RequestOptions): HttpResponse
-	local PromiseSuccess: boolean, Response: HttpResponse = Module.PromiseHttpRequest(RequestOptions):await()
-	if not PromiseSuccess then
-		error(Response)
-	end
-	
-	return Response
 end
 
 return Module
